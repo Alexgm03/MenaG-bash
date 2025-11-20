@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +8,9 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <signal.h>
+#include <string.h>
+
 
 #define MAX_CMD 256
 #define MAX_ARGS 20
@@ -103,8 +107,12 @@ int parse_command(char *input, char *args[], int *background, char **infile, cha
     return argc;
 }
 // Main
-int main(void) {
-    signal(SIGCHLD, handle_sigchld);
+int main() {
+    struct sigaction sa;
+    sa.sa_handler = handle_sigchld;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+    sigaction(SIGCHLD, &sa, NULL);
     char line[MAX_CMD], *args[MAX_ARGS];
     while (1) {
         printf("MenaG-bash> ");
